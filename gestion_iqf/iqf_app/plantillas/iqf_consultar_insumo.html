@@ -1,0 +1,314 @@
+{% extends "padre_inicio.html"%}
+{% load static %}
+{% block title %} Consultar insumo {% endblock %}
+
+{% block content%}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<style>
+    .table-container {
+        max-height: 150px;
+        overflow-y: scroll;
+    }
+    .margen{
+        margin-top: 5px;
+        background-color: skyblue;
+    }
+    .cuadro-texto {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .cuadro-texto p {
+        background-color: skyblue;
+        color: white;
+        padding: 5px;
+        margin-top: 10px;
+    }
+    .cuadro-texto p:first-child {
+        margin-top: 10px;
+    }
+    .cuadro-texto button {
+        background-color: skyblue;
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+    }
+	.messages-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+	}
+
+	.message {
+		padding: 10px;
+		border-radius: 5px;
+		background-color: #dff0d8;
+		color: #3c763d;
+	}
+
+	.show {
+		opacity: 1;
+		visibility: visible;
+		transition: opacity 0.5s;
+	}
+</style>
+<body>
+
+    <div class="container" style="text-align: center;">
+        <!-- Barra de búsqueda de insumos -->
+		<div class="row mt-4">
+			<div class="col-md-6">
+			<form method="GET" action="{% url 'iqf_barra_busqueda' %}">
+				{% csrf_token %}
+				<div class="input-group mb-3">
+					<input type="text" class="form-control" placeholder="Buscar insumo" name="busqueda">
+					<button type="submit" class="btn btn-primary">Buscar</button>
+				</div>
+			</form>
+			{% if busqueda_realizada %}
+				{% if producto_encontrado %}
+					<h2>Producto encontrado:</h2>
+					<p>Nombre: {{ producto_encontrado.nombre }}</p>
+					<p>Fórmula: {{ producto_encontrado.formula }}</p>
+					<!-- Mostrar más detalles del producto si es necesario -->
+					<!-- devolvemos el id del producto para luego obtener los detalles de sus datos -->
+					<a href="{% url 'iqf_mostrar_detalle2' producto_encontrado.id %}">Ver detalles</a> 
+				{% else %}
+					<p>No se encontró el producto o se escribió incorrectamente.</p>
+				{% endif %}
+			{% endif %}
+			</div>
+		</div>
+		<!-- INSUMOS CORRESPONDIENTES AL INVENTARIO -->
+        <div class="row mt-4">
+			<div class="col-md-6">
+			
+				<div class="card mb-4">
+					<div class="card-header">
+						<h5 class="card-title">INSUMOS</h5>
+					</div>
+					<div class="card-body">
+						<div class="table-container">
+							<table class="table table-striped">
+								<thead>
+									<!--EN CASO QUIERAS COLUMNAS-->
+								</thead>
+								<tbody>
+									{% for insumo in datos_extraidos %}
+									<tr>
+										<td><a href="{% url 'iqf_mostrar_detalle2' insumo.id%}" class="btn btn-link text-decoration-none text-secondary">{{ insumo.nombre }}</a></td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>              
+					</div>
+				</div>
+				<!-- INVESTIGACION CORRESPONDIENTE -->
+				<div class="card mb-4">
+					<div class="card-header">
+						<h5 class="card-title">LÍNEAS DE INVESTIGACIÓN</h5>
+					</div>
+					<div class="card-body">
+						<div class="table-container">
+							<table class="table table-striped">
+								<thead>
+
+								</thead>
+								
+								<tbody>
+									<tr>
+										<td>{{ iqf_investigacion }}</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				<!-- OBJETIVO CORRESPONDIENTE -->
+				<div class="card mb-4">
+					<div class="card-header">
+						<h5 class="card-title">OBJETIVOS</h5>
+					</div>
+					<div class="card-body">
+						<div class="table-container">
+							<table class="table table-striped">
+								<thead>
+									<!--EN CASO QUIERAS COLUMNAS-->
+								</thead>
+								<tbody>
+									{% for objetivo in objetivos %}
+									<tr>
+										<td>{{ objetivo}}</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>              
+					</div>
+				</div>
+			</div>
+			
+			<!-- Caja D: Imagen y Descripción -->
+			<div class="col-md-6">
+			
+				<!-- el boton actualizar solo se mostrara si se tiene id del insumo haber seleccionado o buscado insumo -->
+				
+				<div class="col-md-12 d-flex justify-content-center align-items-center">
+					{% if iqf_id %}
+					<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#actualizarModal">Actualizar</button>
+					{% else %}
+					<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#actualizarModal" disabled>Actualizar</button>
+					{% endif %}
+				</div>
+				
+			<br>
+				<div class="card">
+					<div class="card-body" id="descripcion">
+						<!-- Contenido de la descripción -->
+						
+						<img src="{% get_media_prefix %}{{ iqf_imagen }}" class="card-img-top" alt="Imagen" style="width: 60%; height: auto;">
+						
+						<p class="card-text">{{iqf_imagen}}</p>
+					</div>
+				</div>
+			<div>
+				<div class="cuadro-texto">
+					<p>Fecha antigua</p>
+					<p>Fecha reciente</p>
+					<p class="bg-dark" >{{fecha_antigua}}</p>
+					<p class="bg-dark" >{{fecha_reciente}}</p>
+				</div>
+				<div>
+					{% if iqf_id %}
+					<form id="pdfForm" method="get" target="_blank" action="{% get_media_prefix %}{{ iqf_ficha }}">
+					  <button type="submit" class="btn btn-primary">Ver ficha técnica</button>
+					</form>
+					{% else %}
+					<button class="btn btn-primary" disabled>Ver ficha técnica</button>
+					{% endif %}
+				</div>
+				<div class="cuadro-texto">
+					<p>Total</p>
+					<p>{{cantidad_total}} Kg</p>
+				 </div>
+			</div>
+			</div>
+		</div>
+    </div>
+
+	
+	<!-- Modal Actualizar -->
+	{% if producto_encontrado %}
+	<!--mensaje de cambio exitoso-->
+	
+	{% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+            <div class="message alert alert-success" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+	{% endif %}
+	
+    <!-- Tu código HTML y JavaScript aquí -->
+	<div class="modal fade" id="actualizarModal" tabindex="-1" aria-labelledby="actualizarModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="actualizarModalLabel">Actualizar Información de {{producto_encontrado.nombre}}</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="form_actualizar" action="{% url 'iqf_actualizar' producto_encontrado.id %}" method="POST" onsubmit="return mostrarConfirmacion()">
+						{% csrf_token %}
+						<div class="mb-3">
+						<label for="numero" class="form-label">Cantidad a añadir:</label>
+						<input type="text" class="form-control" id="numero" name="cantidad" required>
+						</div>
+						
+						<div class="mb-3">
+						  <label for="fecha" class="form-label">Fecha y hora de vencimiento reciente:</label>
+						  <input type="datetime-local" class="form-control" id="fecha" name="fecha" required>
+						</div>
+						<div class="col d-flex justify-content-center">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+							<button type="submit" class="btn btn-primary" >Guardar</button>
+						</div>
+					</form>
+				</div>
+				
+			</div>
+		</div>
+	</div>
+	{% endif %}
+	
+	
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- jQuery (required for Bootstrap) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+  /*
+    // Agregar evento de clic a las celdas de la tabla
+    $('table').on('click', 'tbody tr', function(){
+      // Obtener los datos del elemento seleccionado
+      var insumo = $(this).find('td:eq(1)').text();
+      var porcentaje = $(this).find('td:eq(2)').text();
+      var id = $(this).find('td:eq(0)').text();
+      var imagen = 'imagen/'+id+'.png';
+
+      // Actualizar la interfaz con los datos del elemento seleccionado
+      $('#descripcion').html('<img src='+imagen+' style="width: 60%; height: auto;"></img><br><p>Insumo: '+insumo+ '</p><p>Porcentaje: ' + porcentaje + '</p>');
+    });
+	*/
+	// confirmacion del guardado de la actualizacion
+	function mostrarConfirmacion() {
+            // Muestra el cuadro de diálogo de confirmación
+            if (confirm('¿Estás seguro de que deseas guardar los cambios?')) {
+                // Si el usuario hace clic en "Aceptar" en el cuadro de diálogo, envía el formulario
+                document.getElementById('form_actualizar').submit();
+            } else {
+                // Si el usuario hace clic en "Cancelar" en el cuadro de diálogo, no hace nada
+				return false;
+            }
+        }
+		
+	// Mostrar el mensaje de éxito cuando el documento está listo
+	document.addEventListener('DOMContentLoaded', function () {
+		var mensajeExito = document.querySelector('.messages-container');
+
+		// Mostrar el mensaje agregando la clase 'show'
+		mensajeExito.classList.add('show');
+
+		// Ocultar el mensaje después de 2 segundos (2000 milisegundos)
+		setTimeout(function () {
+			mensajeExito.classList.remove('show');
+		}, 2000);
+	});
+  </script>
+	<script>
+	// para que la ficha se abra en otra ventana
+	document.getElementById('pdfForm').addEventListener('submit', function(event) {
+	  event.preventDefault();
+	  this.submit();
+	});
+	</script>
+</body>
+</html>
+
+
+{% endblock%}

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock%}</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        integrity="sha512-nDzBd+U8Q0f1YPdze/3bAflQy/8Nlq1SYw2wu5QTJH2h8k2+1mPVZapvug9MDF1HLpaKpZNEpjbmwxFXb4uVQ=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+    />
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<!-- Header -->
+<header class="py-3 bg-dark">
+    <div class="container d-flex justify-content-between align-items-center flex-wrap">
+        <!-- Logo and Text -->
+        <div class="d-flex align-items-center mb-2 mb-md-0">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/cb/Logo_UNAP.png" alt="Logo" height="60">
+            <div class="text-left ms-3">
+                <h4 class="m-0" style="color: white;">UNIVERSIDAD NACIONAL DEL ALTIPLANO</h4>
+                <small style="color: white;">PUNO - PUNO - PERÚ</small>
+            </div>
+        </div>
+        <!-- Buttons -->
+        <div class="d-flex align-items-center">
+            <button type="button" class="btn btn-warning me-3">Notificaciones</button>
+            
+			<div class="dropdown">
+				<button class="btn btn-light dropdown-toggle" type="button" id="userProfileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+					<img src="https://yt3.googleusercontent.com/vRF8BHREiJ3Y16AbMxEi_oEuoQlnNNqGpgULuZ6zrWSAi24HcxX3Vko42RN8ToctH-G0qlWd=s900-c-k-c0x00ffffff-no-rj" alt="Avatar" class="rounded-circle me-2" height="24" width="24">
+					<span class="me-3">{{ nombre_usuario }}</span>
+					<span class="me-3">{{ apellidos }}</span>
+				</button>
+				<div class="dropdown-menu dropdown-menu-end" aria-labelledby="userProfileDropdown">
+					<a class="dropdown-item" href="#">Perfil</a>
+					<a class="dropdown-item" href="#">Cerrar Sesión</a>
+				</div>
+			</div>
+			
+			
+        </div>
+    </div>
+</header>
+
+
+
+	<div class="container mt-4 flex-grow-1">
+		<div class="d-flex">
+			<!-- Sidebar -->
+			<nav id="sidebar" class="col-md-3 col-lg-2 flex-column">
+				<ul class="list-unstyled components">
+					<li>
+						<a href="#"><i class="bi bi-house-door"></i> Inicio</a>
+					</li>
+					<li>
+						<a href="{% url 'iqf_consultar_insumo' %}"><i class="bi bi-search"></i> Consultar insumo</a>
+					</li>
+					<li class="active">
+						<a href="#"><i class="bi bi-pencil"></i> Habilitar registro</a>
+					</li>
+				</ul>
+			</nav>
+
+			<!-- Main Content -->
+			<main class="col-md-9 col-lg-10">
+				{% block content %}
+				{% endblock %}
+			</main>
+		</div>
+	</div>
+
+
+
+<footer class="bg-dark text-white py-3 text-left">
+    <div class="container">
+        <div class="row">
+
+            <div class="col">
+                <p class="footer-heading">Sobre nosotros</p>
+                <p class="footer-subheading">Nosotros</p>
+                <p class="footer-subheading">Contáctenos</p>
+            </div>
+
+
+            <div class="col">
+                <p class="footer-heading">Información</p>
+                <p class="footer-subheading">Políticas de privacidad</p>
+                <p class="footer-subheading">Términos y condiciones</p>
+            </div>
+
+
+            <div class="col">
+                <p class="footer-heading">Redes sociales</p>
+                <div class="footer-social-icons">
+                    <a href="#" class="footer-icon">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="#" class="footer-icon">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="footer-icon">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- All rights reserved -->
+        <p class="text-center">&copy; Todos los derechos reservados DevLabs</p>
+    </div>
+</footer>
+
+<style>
+    .footer-heading {
+        position: relative;
+        margin-bottom: 20px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .footer-heading::after {
+        content: "";
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 70%;
+        height: 2px;
+        
+        background-color: white;
+    }
+    .col{
+        margin-bottom: 20px;
+    }
+    .footer-social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    .footer-icon {
+        font-size: 24px;
+        color: rgba(255, 255, 255, 0.7); 
+    }
+	.dropdown-menu {
+    z-index: 9999;
+	}
+</style>
+
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.min.js"></script>
+
+
+</body>
+</html>

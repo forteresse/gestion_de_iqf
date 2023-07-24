@@ -1,0 +1,47 @@
+{%load static%}
+<!-- Plantilla HTML con Bootstrap 5 -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar sesión</title>
+  <!-- Enlaces a los archivos CSS de Bootstrap 5 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container">
+    <div class="row mt-5">
+      <div class="col-md-6 offset-md-3">
+        <h2>Iniciar sesión</h2>
+        <form action="{% url 'iniciar_sesion' %}" method="POST">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="username" class="form-label">Usuario</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+          </div>
+          <div class="mb-3">
+            <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+            <button type="button" class="btn btn-secondary">Salir</button>
+          </div>
+          <div class="mb-3">
+            <a href="{% url 'recuperar_contrasena' %}">Recuperar contraseña</a>
+          </div>
+        </form>
+		{% if error_message %}
+			<p>{{ error_message }}</p>
+		{% endif %}
+      </div>
+    </div>
+  </div>
+  
+  <!-- Enlaces a los archivos JavaScript de Bootstrap 5 (jQuery es requerido) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
