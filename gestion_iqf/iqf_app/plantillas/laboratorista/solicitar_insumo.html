@@ -1,0 +1,40 @@
+{% extends "laboratorista/padre_lab.html"%}
+{% load static %}
+{% block title %} Solicitar insumo {% endblock %}
+
+{% block content%}
+
+<p>solicitar aqui</p>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title">INSUMOS</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-container">
+            <div style="overflow-x: auto;">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>INSUMO QUÍMICO</th>
+                            <th>FECHA DE ENVÍO</th>
+                            <th>ESTADO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td><a href="#" class="btn btn-link text-decoration-none text-secondary">nombre de insumo</a></td>
+                            <td>insumo fecha de envio</td>
+                            <td>insumo estado</td>
+                        </tr>
+                       
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock%}

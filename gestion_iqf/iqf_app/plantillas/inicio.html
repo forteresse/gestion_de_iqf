@@ -1,0 +1,25 @@
+{% extends "padre_inicio.html"%}
+{% block title %} Consultar insumo {% endblock %}
+
+{% block content%}
+<!-- Contenido de la página -->
+<h1>Título de la página</h1>
+
+<p>Este es un párrafo de ejemplo.</p>
+
+<div id="contenido">
+	<!-- Aquí puedes agregar más elementos HTML -->
+	{% for i in users_permisos%}
+	<tr>
+	<td>{{i.name}}</td>
+	<td>&nbsp</td>
+	<td>{{i.codename}}</td>
+	</tr>
+	<br>
+	{% endfor %}
+</div>
+
+<!-- Agrega aquí los enlaces a tus archivos JavaScript o librerías externas -->
+<script src="script.js"></script>
+{% endblock%}
+
