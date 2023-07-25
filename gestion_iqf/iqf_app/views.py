@@ -10,14 +10,22 @@ from django.shortcuts import get_object_or_404
 #para actualizar insumo
 from datetime import datetime
 #para reciclar informacion entre plantillas y no acceder base de datosfrom django.http import QueryDict
-from django.http import QueryDict
+#from django.http import QueryDict
+
 #para emitir mensajes de error,de exito o mas
 from django.contrib import messages
 # para proteger las vistas se requerira el inicio de sesion para que se muestren
 from django.contrib.auth.decorators import login_required
 #realizamos test de pase de usuario
 from django.contrib.auth.decorators import user_passes_test
-
+#para cerrar sesión
+from django.contrib.auth import logout
+#para almacenar archivos
+import os
+#para acceder a propiedades de configuraciones
+from django.conf import settings
+#librerias para abrir pdf
+from django.http import FileResponse
 
 # funciones para proteger vistas de usuarios admitidos
 def es_almacen_iqf(user):
@@ -63,6 +71,10 @@ def iniciar_sesion(request):
             return render(request, 'iniciar_sesion.html', {'error_message': error_message})
     else:
         return render(request, 'iniciar_sesion.html')
+
+def cerrar_sesion(request):
+    logout(request)
+    return redirect('iniciar_sesion')
 
 def recuperar_contrasena(request):
     return render(request, 'recuperar_contrasena.html')
@@ -117,11 +129,23 @@ def iqf_consultar_insumo(request):
     
     for i in range(len(insumos_datos)):
         for j in insumos_datos[i]:
-            datos_extraidos.append(j)
-     
+            datos_extraidos.append(j) 
     iqf_imagen_base = 'iqf/iqf_default.jpg'
-    return render (request, "iqf_consultar_insumo.html", {'nombre_usuario':nombre, 
-    'apellidos':apellidos, 'insumos_almacen':insumos_almacen, 'datos_extraidos':datos_extraidos, 'iqf_imagen':iqf_imagen_base})
+    
+    notificaciones = notificaciones_user.objects.filter(noti_estados_id = 4)
+    cant_noti= len(notificaciones)
+    print ("\n cantidad de notificaciones \n" , len(notificaciones))
+    print ("\n notificaciones ---- \n", notificaciones)
+    
+    contexto = {'nombre_usuario':nombre, 
+                'apellidos':apellidos, 
+                'insumos_almacen':insumos_almacen, 
+                'datos_extraidos':datos_extraidos,
+                'iqf_imagen': iqf_imagen_base,
+                'cant_noti':cant_noti}
+    
+    
+    return render (request, "iqf_consultar_insumo.html", contexto)
 
 @login_required
 def iqf_llenar_campos(request, insumo_id):
@@ -263,6 +287,10 @@ def iqf_mostrar_detalle2(request, producto_encontrado_id):
     ficha_requerida=ficha_iqf[0].fichas_tecnicas_id.nombre_pdf
     print ("\n esta es la ficha : ", ficha_requerida, "\n")
     
+    notificaciones = notificaciones_user.objects.filter(noti_estados_id = 4)
+    cant_noti= len(notificaciones)
+    print ("\n cantidad de notificaciones \n" , len(notificaciones))
+    print ("\n notificaciones ---- \n", notificaciones)
     
     contexto = {'nombre_usuario':nombre, 
                 'apellidos':apellidos, 
@@ -276,7 +304,8 @@ def iqf_mostrar_detalle2(request, producto_encontrado_id):
                 'cantidad_total':cant_total,
                 'iqf_id': id_iq_fiscalizado,
                 'producto_encontrado':iqf,
-                'iqf_ficha':ficha_requerida}
+                'iqf_ficha':ficha_requerida,
+                'cant_noti':cant_noti}
     return render (request, "iqf_consultar_insumo.html", contexto)
     
 """
@@ -380,22 +409,180 @@ def iqf_ver_ficha(request, iqf_id):
                 'iqf_ficha':ficha_requerida}
     
     return render(request, 'ver_ficha.html',contexto)
+
+@login_required
+@user_passes_test(es_almacen_iqf, login_url='/acceso_denegado/')    
+def iqf_habilitar(request):
+    nombre = request.user.first_name
+    apellidos = request.user.last_name
+    
+    #notificador = noti_estados
+    notificaciones = notificaciones_user.objects.filter(noti_estados_id = 4)
+    cant_noti= len(notificaciones)
+    print ("\n solicitudes nuevas \n" , notificaciones)
+    print ("\n cantidad de notificaciones \n" , len(notificaciones))
+    print ("\n notificaciones ---- \n", notificaciones)
+    
+    #pasamos el inventario
+    inventario_usuarios= inventarios.objects.all()
+    
+    contexto = {'nombre_usuario':nombre, 
+                'apellidos':apellidos,
+                'solicitudes_nuevas':notificaciones,
+                'cant_noti':cant_noti,
+                'inventario_usuarios':inventario_usuarios}
+    
+    return render(request,"habilitar_insumo.html", contexto)
+
+def habilitar_solicitud(request, id_solicitud):
+    from .models import noti_estados
+
+def habilitar_solicitud(request, id_solicitud):
+    solicitud = notificaciones_user.objects.filter(id=id_solicitud).first()
+
+    if solicitud:
+        print("\nLa solicitud a habilitar tiene estado:", solicitud.noti_estados_id)
+
+        # Obtener la instancia del modelo noti_estados con ID igual a 1 
+        estado_habilitado = noti_estados.objects.get(id=1)
+
+        # Asignar el estado_habilitado al campo noti_estados_id
+        solicitud.noti_estados_id = estado_habilitado
+
+        # Imprimir el nuevo valor del campo (esto mostrará el ID del estado "habilitado")
+        print("Nuevo estado:", solicitud.noti_estados_id.id)
+
+        # Guardar la instancia actualizada en la base de datos
+        solicitud.save()
+
+    return redirect("iqf_habilitar")
+
     
     
     
+def rechazar_solicitud(request, id_solicitud):
+    solicitud = notificaciones_user.objects.filter(id=id_solicitud).first()
+    if solicitud:
+        print("\nLa solicitud a habilitar tiene estado:", solicitud.noti_estados_id)
+
+        # Obtener la instancia del modelo noti_estados con ID igual a 1 
+        estado_habilitado = noti_estados.objects.get(id=2)
+
+        # Asignar el estado_habilitado al campo noti_estados_id
+        solicitud.noti_estados_id = estado_habilitado
+
+        # Imprimir el nuevo valor del campo (esto mostrará el ID del estado "habilitado")
+        print("Nuevo estado:", solicitud.noti_estados_id.id)
+
+        # Guardar la instancia actualizada en la base de datos
+        solicitud.save()
+
+    return redirect("iqf_habilitar")
+@login_required
+@user_passes_test(es_almacen_iqf, login_url='/acceso_denegado/')  
+def iqf_revisar_solicitud(request,nombre_archivo):
+
+    print("El archivo a revisar es:", nombre_archivo)
+    pdf_path = os.path.join(settings.MEDIA_ROOT, 'solicitudes', nombre_archivo)
+
+    print("El archivo a revisar es:", pdf_path)
+
+    return redirect("iqf_habilitar")
     
-#VISTAS PARA LOS LABORATORISTAS
+    
+#VISTAS PARA LOS LABORATORISTAS #VISTAS PARA LOS LABORATORISTAS #VISTAS PARA LOS LABORATORISTAS #VISTAS PARA LOS LABORATORISTAS
+
+
+
 @login_required
 @user_passes_test(es_laboratorista_iqf, login_url='/acceso_denegado/')
 def lab_solicitar_insumo(request):
     nombre = request.user.first_name
     apellidos = request.user.last_name
+    iq_solicitar = iq_fiscalizados.objects.all()
+    print ("\n isumos solicitud \n", iq_solicitar)
+
+    #iq_lista=[]
     
+    #notificaciones laboratorista, suma de solicitudes habilitadas y rechazadas
+    noti_rechazadas = notificaciones_user.objects.filter(noti_estados_id = 2)
+    noti_habilitadas = notificaciones_user.objects.filter(noti_estados_id = 1)
+    cant_noti= len(noti_rechazadas) + len(noti_habilitadas)
+    
+    for i in iq_solicitar:
+    #iq_lista.appendiq_solicitar[i].nombre
+        print ("\n estos son los insumos solicitados \n",i.nombre)
+
     contexto = {'nombre_usuario':nombre, 
-                'apellidos':apellidos}
+                'apellidos':apellidos,
+                'iq_solicitar':iq_solicitar,
+                'cant_noti':cant_noti}
     
     return render(request, "laboratorista/solicitar_insumo.html", contexto)
 
+
+
+@login_required
+@user_passes_test(es_laboratorista_iqf, login_url='/acceso_denegado/')
+def soli_actualizar(request): # para realizar una nueva solicitud
+    if request.method == 'POST':
+    
+        #recuperamos la información
+        insum = request.POST['insumo']
+        
+        print ("\n\nel insumo seleccionado es\n\n", insum)
+        cant = request.POST['cantidad']
+        obj = request.POST['objetivo']
+        est = noti_estados.objects.filter(id=4)
+        
+        #esto para guardar en la base de datos, abajo la manera para guardar el pdf en los archivos
+        #pdf_soli = request.POST['pdf']
+        #print ("pdf_soli ", pdf_soli)
+        
+        fecha_actual = datetime.now()
+        fecha_format = fecha_actual.strftime('%Y-%m-%d %H:%M:%S.%f')
+        
+        
+        #recuperación de pdf
+        pdf_file = request.FILES.get('pdf')
+        #guardado de pdf
+        if pdf_file:
+            # Obtenemos la ruta completa donde se guardará el archivo PDF en la subcarpeta 'solicitudes'
+            pdf_path = os.path.join(settings.MEDIA_ROOT, 'solicitudes', pdf_file.name)
+
+            # Guardamos el archivo PDF en la ruta especificada
+            with open(pdf_path, 'wb') as file:
+                for chunk in pdf_file.chunks():
+                    file.write(chunk)
+        
+        encargado = User.objects.filter(id=3)
+        
+        print ("el encargado es ", encargado[0].first_name)
+        
+        nueva_notificacion = notificaciones_user(cantidad=cant, solicitud=pdf_file.name, 
+                                                fecha_envio=fecha_format, emisor_id=request.user, 
+                                                noti_estados_id=est[0], receptor_id=encargado[0])
+
+    # Guardar la nueva instancia en la base de datos
+        nueva_notificacion.save()
+        
+        #filtramos el insumo solicitado
+        insumo_soli= iq_fiscalizados.objects.filter(id=insum)
+        
+        registro_notificacion = iq_fiscalizados_notificaciones_user(iq_fiscalizados_id= insumo_soli[0], notificaciones_user_id = nueva_notificacion)
+        registro_notificacion.save()
+        #identificamos los insumos correspondientes al almacen
+        #actualizar_cantidad = iq_fiscalizados_inventarios.objects.filter(inventarios_id=inventario_id, iq_fiscalizados_id=producto_encontrado_id)
+        #actualizar_cantidad = actualizar_cantidad[0]
+        #print("\n array de insumos",actualizar_cantidad.cantidad,"\n")
+        
+        #actualizar_cantidad.cantidad += int(cant)
+        #actualizar_cantidad.save()
+        
+        #enviamos el mensaje de exito
+        messages.success(request, 'La solicitud se registró con éxito.')
+        
+        return redirect('lab_solicitar_insumo')
 #FUNCIONES GENERALES CON BASE DE DATOS
 #def obtener_insumos(request, insumo):
     

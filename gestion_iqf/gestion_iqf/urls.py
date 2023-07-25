@@ -25,6 +25,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', iniciar_sesion),
+    path('cerrar_sesion/', cerrar_sesion, name='cerrar_sesion'),
     path('inicio/', inicio, name='inicio'),
     path('iniciar_sesion/', iniciar_sesion, name='iniciar_sesion'),
     path('recuperar_contrasena/', recuperar_contrasena, name='recuperar_contrasena'),
@@ -37,7 +38,12 @@ urlpatterns = [
     path('iqf_llenar_campos/<str:insumo_id>/',iqf_llenar_campos, name='iqf_llenar_campos'),
     path('iqf_actualizar/<str:producto_encontrado_id>/',iqf_actualizar, name='iqf_actualizar'),
     path('iqf_ver_ficha/<str:iqf_id>/', iqf_ver_ficha, name='iqf_ver_ficha'),
+    path('iqf_habilitar/', iqf_habilitar, name='iqf_habilitar'),
+    path('iqf_revisar_solicitud/<str:nombre_archivo>/', iqf_revisar_solicitud, name='iqf_revisar_solicitud'),
+    path('habilitar_solicitud/<str:id_solicitud>/', habilitar_solicitud, name='habilitar_solicitud'),
+    path('rechazar_solicitud/<str:id_solicitud>/', rechazar_solicitud, name='rechazar_solicitud'),
     
     #rutas de laboratoristas
-    path('lab_solicitar_insumo', lab_solicitar_insumo, name='lab_solicitar_insumo')
+    path('lab_solicitar_insumo', lab_solicitar_insumo, name='lab_solicitar_insumo'),
+    path('soli_actualizar', soli_actualizar, name='soli_actualizar'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

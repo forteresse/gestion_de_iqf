@@ -107,8 +107,19 @@ class iq_fiscalizados_objetivos_admin(admin.ModelAdmin):
 @admin.register(iq_fiscalizados)
 class iq_fiscalizados_admin(admin.ModelAdmin):
     list_display = ['id', 'nombre', 'formula', 'imagen_iqf', 'fichas_tecnicas_id', 'medidas_id', 'lineas_investigacion_id']
-    
 
 @admin.register(denominaciones)
 class denominaciones_admin(admin.ModelAdmin):
     list_display = ['conjunto', 'iq_fiscalizados']
+    
+@admin.register(noti_estados)
+class noti_estados_admin(admin.ModelAdmin):
+    list_display = ['estado']
+    
+@admin.register(notificaciones_user)
+class notificaciones_user_admin(admin.ModelAdmin):
+    list_display = ['cantidad', 'solicitud', 'fecha_envio', 'emisor_id', 'receptor_id', 'noti_estados_id']
+    
+@admin.register(iq_fiscalizados_notificaciones_user)
+class iq_fiscalizados_notificaciones_user_admin(admin.ModelAdmin):
+    list_display = ['iq_fiscalizados_id', 'notificaciones_user_id']

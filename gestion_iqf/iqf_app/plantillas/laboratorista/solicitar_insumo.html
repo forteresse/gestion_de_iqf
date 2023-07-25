@@ -3,9 +3,7 @@
 {% block title %} Solicitar insumo {% endblock %}
 
 {% block content%}
-
-<p>solicitar aqui</p>
-
+<!--
 <div class="card mb-4">
     <div class="card-header">
         <h5 class="card-title">INSUMOS</h5>
@@ -34,7 +32,131 @@
             </div>
         </div>
     </div>
+	
+</div> -->
+
+
+
+<div class="col-md-12 d-flex justify-content-center align-items-center">
+	<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#actualizarModal">Nueva peticion</button>
 </div>
+
+<!-- Modal Actualizar -->
+<!--mensaje de cambio exitoso-->
+
+{% if messages %}
+<div class="messages-container">
+	{% for message in messages %}
+		<div class="message alert alert-success" role="alert">
+			{{ message }}
+		</div>
+	{% endfor %}
+</div>
+{% endif %}
+
+<!-- Tu código HTML y JavaScript aquí -->
+<div class="modal fade" id="actualizarModal" tabindex="-1" aria-labelledby="actualizarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="actualizarModalLabel">Actualizar Información de </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'soli_actualizar' %}" id="form_actualizar" enctype="multipart/form-data" method="POST" onsubmit="return mostrarConfirmacion()">
+
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="insumo" class="form-label">Seleccione el insumo requerido:</label>
+                        <div class="input-group">
+                            <select class="form-select" id="insumo" name="insumo" required>
+                                <!-- Aquí obtienes los datos de la tabla insumos y los muestras como opciones -->
+                                <!-- Por ejemplo, si tienes una lista de insumos, puedes usar un for loop de Django para mostrarlos -->
+                                {% for insumo in iq_solicitar %}
+                                    <option value="{{ insumo.id }}">{{ insumo.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="cantidad" class="form-label">Que cantidad requiere (en gramos):</label>
+                        <input type="text" class="form-control" id="cantidad" name="cantidad" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="objetivo" class="form-label">escriba el objetivo para el cual se usará el insumo:</label>
+                        <input type="text" class="form-control" id="objetivo" name="objetivo" required>
+                    </div>
+					
+					<div class="mb-3">
+                        <label for="pdf" class="form-label">Subir archivo PDF:</label>
+                        <input type="file" class="form-control" id="pdf" name="pdf" accept=".pdf" required>
+                    </div>
+					
+                    <div class="col d-flex justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.messages-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+	}
+
+	.message {
+		padding: 10px;
+		border-radius: 5px;
+		background-color: #dff0d8;
+		color: #3c763d;
+	}
+
+	.show {
+		opacity: 1;
+		visibility: visible;
+		transition: opacity 0.5s;
+	}
+</style>
+
+<script>
+   
+	// confirmacion del guardado de la actualizacion
+	function mostrarConfirmacion() {
+            // Muestra el cuadro de diálogo de confirmación
+            if (confirm('¿Estás seguro de que deseas guardar los cambios?')) {
+                // Si el usuario hace clic en "Aceptar" en el cuadro de diálogo, envía el formulario
+                document.getElementById('form_actualizar').submit();
+            } else {
+                // Si el usuario hace clic en "Cancelar" en el cuadro de diálogo, no hace nada
+				return false;
+            }
+        }
+		
+	// Mostrar el mensaje de éxito cuando el documento está listo
+	document.addEventListener('DOMContentLoaded', function () {
+		var mensajeExito = document.querySelector('.messages-container');
+
+		// Mostrar el mensaje agregando la clase 'show'
+		mensajeExito.classList.add('show');
+
+		// Ocultar el mensaje después de 2 segundos (2000 milisegundos)
+		setTimeout(function () {
+			mensajeExito.classList.remove('show');
+		}, 2000);
+	});
+  </script>
 
 
 {% endblock%}

@@ -27,24 +27,23 @@
                 <small style="color: white;">PUNO - PUNO - PERÚ</small>
             </div>
         </div>
-        <!-- Buttons -->
-        <div class="d-flex align-items-center">
-            <button type="button" class="btn btn-warning me-3">Notificaciones</button>
-            
-			<div class="dropdown">
-				<button class="btn btn-light dropdown-toggle" type="button" id="userProfileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-					<img src="https://yt3.googleusercontent.com/vRF8BHREiJ3Y16AbMxEi_oEuoQlnNNqGpgULuZ6zrWSAi24HcxX3Vko42RN8ToctH-G0qlWd=s900-c-k-c0x00ffffff-no-rj" alt="Avatar" class="rounded-circle me-2" height="24" width="24">
-					<span class="me-3">{{ nombre_usuario }}</span>
-					<span class="me-3">{{ apellidos }}</span>
-				</button>
-				<div class="dropdown-menu dropdown-menu-end" aria-labelledby="userProfileDropdown">
-					<a class="dropdown-item" href="#">Perfil</a>
-					<a class="dropdown-item" href="#">Cerrar Sesión</a>
-				</div>
+        <!-- Buttons -->	
+		<div class="d-flex align-items-center">
+			<div class="alert alert-warning d-inline-flex align-items-center me-3" role="alert" style="height: 24px; width: 150px;">
+				Notificaciones <span class="badge rounded-pill bg-danger ms-2" style="height: 24px;">{{ cant_noti }}</span>
 			</div>
-			
-			
-        </div>
+
+			<div class="alert alert-info d-flex align-items-center" style="height: 30px;">
+				<img src="https://yt3.googleusercontent.com/vRF8BHREiJ3Y16AbMxEi_oEuoQlnNNqGpgULuZ6zrWSAi24HcxX3Vko42RN8ToctH-G0qlWd=s900-c-k-c0x00ffffff-no-rj" alt="Avatar" class="rounded-circle me-2" height="24" width="24">
+				<span class="me-3">{{ nombre_usuario }}</span>
+				<span class="me-3">{{ apellidos }}</span>
+				<!-- <button class="btn btn-primary" onclick="verPerfil()">Ver Perfil</button> -->
+				<!--<button class="btn btn-danger ms-2" href="{% url 'cerrar_sesion' %}"> Cerrar Sesión</button> -->
+				<button class="btn btn-danger ms-2" onclick="cerrarSesion()" style="height: 28px; line-height: 12px;">Cerrar Sesión</button>
+			</div>
+		</div>
+		
+		
     </div>
 </header>
 
@@ -152,7 +151,19 @@
     
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.min.js"></script>
-
+<script>
+    function cerrarSesion() {
+        fetch("{% url 'cerrar_sesion' %}")
+        .then((response) => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            }
+        })
+        .catch((error) => {
+            console.error("Error al cerrar sesión:", error);
+        });
+    }
+</script>
 
 </body>
 </html>

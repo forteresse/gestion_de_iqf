@@ -61,7 +61,7 @@ class iq_fiscalizados(models.Model):
     lineas_investigacion_id = models.ForeignKey(lineas_investigacion, on_delete=models.CASCADE)
     inventarios = models.ManyToManyField(inventarios, through='iq_fiscalizados_inventarios')
     objetivos = models.ManyToManyField(objetivos, through='iq_fiscalizados_objetivos')
-
+ 
     """
     #relaciones de muchos a muchos de tablas "objetivos" e "inventarios"
     inventarios = models.ManyToManyField('inventarios', through=iq_fiscalizados_inventarios)
@@ -80,3 +80,21 @@ class iq_fiscalizados_objetivos(models.Model):
 class denominaciones(models.Model):
     conjunto = models.CharField(max_length=400)
     iq_fiscalizados = models.ForeignKey(iq_fiscalizados, on_delete=models.CASCADE)
+    
+class noti_estados(models.Model):
+    estado = models.CharField(max_length=50)
+    
+class notificaciones_user(models.Model):
+    cantidad = models.IntegerField()
+    solicitud = models.FileField(upload_to='solicitudes/', null=True, blank=True)
+    fecha_envio = models.DateTimeField()
+    emisor_id = models.ForeignKey(User, on_delete=models.CASCADE, db_column='emisor_id', related_name='emisor_id')
+    receptor_id = models.ForeignKey(User, on_delete=models.CASCADE, db_column='receptor_id', related_name='receptor_id')
+    noti_estados_id = models.ForeignKey(noti_estados, on_delete=models.CASCADE, db_column='noti_estados_id')
+    iq_fiscalizado = models.ManyToManyField(iq_fiscalizados, through='iq_fiscalizados_notificaciones_user')
+    
+class iq_fiscalizados_notificaciones_user(models.Model):
+    iq_fiscalizados_id = models.ForeignKey(iq_fiscalizados, on_delete=models.CASCADE, db_column='iq_fiscalizados_id')
+    notificaciones_user_id = models.ForeignKey(notificaciones_user, on_delete=models.CASCADE, db_column='notificaciones_user_id')
+
+
