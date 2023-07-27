@@ -51,6 +51,10 @@ from django.contrib.admin import TabularInline
 @admin.register(titulos)
 class titulos(admin.ModelAdmin):
     list_display = ['id', 'nombre']
+    
+@admin.register(perfil_usuario)
+class perfil_usuario_admin(admin.ModelAdmin):
+    list_display = ['user', 'titulo']
 
 @admin.register(areas)
 class areas_admin(admin.ModelAdmin):
@@ -64,12 +68,9 @@ class facultades_admin(admin.ModelAdmin):
 class escuelas_admin(admin.ModelAdmin):
     list_display = ['id', 'nombre', 'facultades_id']
 
-
-#@admin.register(iq_fiscalizados_inventarios)
 class iq_fiscalizados_inventarios_inline(admin.TabularInline):
     model=iq_fiscalizados_inventarios
     extra=1
-
 
 @admin.register(inventarios)
 class inventarios_admin(admin.ModelAdmin):
@@ -92,21 +93,44 @@ class lineas_investigacion_admin(admin.ModelAdmin):
 class objetivos_admin(admin.ModelAdmin):
     list_display = ['id', 'objetivo']
 
+@admin.register(pecosas)
+class pecosas_admin(admin.ModelAdmin):
+    list_display = ['id', 'pecosa_pdf']
+
+@admin.register(nombres_marca)
+class nombres_marca_admin(admin.ModelAdmin):
+    list_display = ['id', 'nombre']
+
+@admin.register(marcas)
+class marcas_admin(admin.ModelAdmin):
+    list_display = ['id', 'cod_articulo', 'concentracion', 'fecha_v']
+    
+@admin.register(iq_fiscalizados)
+class iq_fiscalizados_admin(admin.ModelAdmin):
+    list_display = ['id', 'nombre', 'formula', 'imagen_iqf', 'fichas_tecnicas_id', 'medidas_id']
+
+@admin.register(iq_fiscalizados_lineas_investigacion)
+class iq_fiscalizados_lineas_investigacion_admin(admin.ModelAdmin):
+    list_display = ['iq_fiscalizados_id', 'lineas_investigacion_id']
+
+@admin.register(iq_fiscalizados_objetivos)
+class iq_fiscalizados_objetivos_admin(admin.ModelAdmin):
+    list_display = ['iq_fiscalizados_id', 'objetivos_id']
+
+@admin.register(iq_fiscalizados_pecosas)
+class iq_fiscalizados_pecosas_admin(admin.ModelAdmin):
+    list_display = ['cantidad', 'iq_fiscalizados_id', 'pecosas_id']
+
+@admin.register(iq_fiscalizados_marcas)
+class iq_fiscalizados_marcas_admin(admin.ModelAdmin):
+    list_display = ['iq_fiscalizados_id', 'marcas_id']
+
 """
 @admin.register(iq_fiscalizados_inventarios)
 class iq_fiscalizados_inventarios_admin(admin.ModelAdmin):
     list_display = ['cantidad', 'iq_fiscalizados_id', 'inventarios_id']
 """
 
-
-
-@admin.register(iq_fiscalizados_objetivos)
-class iq_fiscalizados_objetivos_admin(admin.ModelAdmin):
-    list_display = ['iq_fiscalizados_id', 'objetivos_id']
-
-@admin.register(iq_fiscalizados)
-class iq_fiscalizados_admin(admin.ModelAdmin):
-    list_display = ['id', 'nombre', 'formula', 'imagen_iqf', 'fichas_tecnicas_id', 'medidas_id', 'lineas_investigacion_id']
 
 @admin.register(denominaciones)
 class denominaciones_admin(admin.ModelAdmin):
@@ -118,8 +142,8 @@ class noti_estados_admin(admin.ModelAdmin):
     
 @admin.register(notificaciones_user)
 class notificaciones_user_admin(admin.ModelAdmin):
-    list_display = ['cantidad', 'solicitud', 'fecha_envio', 'emisor_id', 'receptor_id', 'noti_estados_id']
+    list_display = ['solicitud', 'fecha_envio', 'emisor_id', 'receptor_id', 'noti_estados_id']
     
 @admin.register(iq_fiscalizados_notificaciones_user)
 class iq_fiscalizados_notificaciones_user_admin(admin.ModelAdmin):
-    list_display = ['iq_fiscalizados_id', 'notificaciones_user_id']
+    list_display = ['iq_fiscalizados_id', 'notificaciones_user_id', 'cantidad']

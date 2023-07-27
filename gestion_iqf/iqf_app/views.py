@@ -26,6 +26,18 @@ import os
 from django.conf import settings
 #librerias para abrir pdf
 from django.http import FileResponse
+#Librerias necesarias para la generacion de pdf
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from io import BytesIO  # Import BytesIO from io module
+#librerias 2 necesarias para la generacion de pdf
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from django_filters.views import FilterView
+
 
 # funciones para proteger vistas de usuarios admitidos
 def es_almacen_iqf(user):
@@ -88,12 +100,14 @@ def datos_generales(request, ruta):
     }
     return render(request,ruta, contexto)
 """
+
 #FUNCIONES MÓDULO CONSULTAR INSUMO
 @login_required
 @user_passes_test(es_almacen_iqf, login_url='/acceso_denegado/')
 def iqf_consultar_insumo(request):
     nombre = request.user.first_name
     apellidos = request.user.last_name
+    id_usuario = request.user.id
     
     #mostramos la primera tabla que da a conocer los insumos que se encuentran en el almacen
     #select from iq_fiscalizados_inventarios where inventarios_id='almaceniqf'
@@ -105,12 +119,12 @@ def iqf_consultar_insumo(request):
     for i in insumos_fiscalizados:
         print("nombre",i.nombre)
         print("nombre",i.formula)
-        
+    
     insumos_fiscalizados2= iq_fiscalizados.objects.filter(id='7664-93-9')
     for i in insumos_fiscalizados2:
         print("nombre 2 ",i.nombre)
         print("nombre 2 ",i.formula)
-        
+    
     """
     print("ta buscando")
     for i in insumos_almacen:
@@ -138,7 +152,9 @@ def iqf_consultar_insumo(request):
     print ("\n notificaciones ---- \n", notificaciones)
     
     contexto = {'nombre_usuario':nombre, 
-                'apellidos':apellidos, 
+                'apellidos':apellidos,
+                'id_usuario':id_usuario,
+                'titulo':perfil_usuario.objects.get(user_id=id_usuario),
                 'insumos_almacen':insumos_almacen, 
                 'datos_extraidos':datos_extraidos,
                 'iqf_imagen': iqf_imagen_base,
@@ -167,6 +183,7 @@ def iqf_barra_busqueda(request):
     
     nombre = request.user.first_name
     apellidos = request.user.last_name
+    id_usuario = request.user.id
     
     #mostramos la primera tabla que da a conocer los insumos que se encuentran en el almacen
     insumos_almacen = iq_fiscalizados_inventarios.objects.filter(inventarios_id='almaceniqf')
@@ -196,6 +213,8 @@ def iqf_barra_busqueda(request):
     
     contexto = {'nombre_usuario':nombre, 
                 'apellidos':apellidos, 
+                'id_usuario':id_usuario,
+                'titulo':perfil_usuario.objects.get(user_id=id_usuario),
                 'insumos_almacen':insumos_almacen, 
                 'datos_extraidos':datos_extraidos,'producto_encontrado': producto_encontrado, 
                 'iqf_imagen': iqf_imagen_base,
@@ -219,6 +238,7 @@ def iqf_mostrar_detalle2(request, producto_encontrado_id):
     
     nombre = request.user.first_name
     apellidos = request.user.last_name
+    id_usuario = request.user.id
     
     #mostramos la primera tabla que da a conocer los insumos que se encuentran en el almacen
     insumos_almacen = iq_fiscalizados_inventarios.objects.filter(inventarios_id='almaceniqf')
@@ -239,8 +259,8 @@ def iqf_mostrar_detalle2(request, producto_encontrado_id):
             
     # obtener investigacion relacionada
     print("\ncomprobaciooon\n")
-    iqf_investigacion = iqf.lineas_investigacion_id.nombre
-    print(" la investigacion es : ",iqf.lineas_investigacion_id.nombre)
+    #iqf_investigacion = iqf.lineas_investigacion_id.nombre
+    #print(" la investigacion es : ",iqf.lineas_investigacion_id.nombre)
     
     #obtener objetivo relacionado
     #necesitamos identificar cual objetivo pertnece a dicho insumo manytomany
@@ -255,6 +275,11 @@ def iqf_mostrar_detalle2(request, producto_encontrado_id):
     iqf_objetivo = iq_fiscalizados_objetivos.objects.filter(iq_fiscalizados_id=iqf.id)
     #al almacenar iqf_objetivo este es un array pero como solo tenemos un insumo ingresando
     #entonces solo debemos obtener el [0]
+    
+    #lineas de investigacion 
+    lineas_de_investigacion = iq_fiscalizados_lineas_investigacion.objects.filter(iq_fiscalizados_id=iqf.id)
+    
+    
     """
     print("el objetivo es: ", iqf_objetivo[0].objetivos_id.objetivo)
     iqf_objetivo = iqf_objetivo[0].objetivos_id.objetivo
@@ -292,12 +317,20 @@ def iqf_mostrar_detalle2(request, producto_encontrado_id):
     print ("\n cantidad de notificaciones \n" , len(notificaciones))
     print ("\n notificaciones ---- \n", notificaciones)
     
+    for i in insumos_almacen:
+        print ("\n insumo almacen -- \n", i.iq_fiscalizados_id.nombre, "\n insumo almacen -- \n")
+    
+    marcas_select = nombres_marca.objects.all()
+    
+
     contexto = {'nombre_usuario':nombre, 
                 'apellidos':apellidos, 
+                'id_usuario':id_usuario,
+                'titulo':perfil_usuario.objects.get(user_id=id_usuario),
                 'insumos_almacen':insumos_almacen, 
                 'datos_extraidos':datos_extraidos,
-                'iqf_investigacion':iqf_investigacion,
                 'objetivos': objetivos,
+                'lineas_de_investigacion':lineas_de_investigacion,
                 'iqf_imagen': iqf_imagen,
                 'fecha_antigua': iqf_fecha_a,
                 'fecha_reciente': iqf_fecha_r,
@@ -305,7 +338,8 @@ def iqf_mostrar_detalle2(request, producto_encontrado_id):
                 'iqf_id': id_iq_fiscalizado,
                 'producto_encontrado':iqf,
                 'iqf_ficha':ficha_requerida,
-                'cant_noti':cant_noti}
+                'cant_noti':cant_noti,
+                'marcas':marcas_select}
     return render (request, "iqf_consultar_insumo.html", contexto)
     
 """
@@ -322,6 +356,7 @@ def iqf_mostrar_detalle2(request, producto_encontrado_id):
         return render(request, 'gestionar.html', context)
 """
 
+"""
 @login_required
 @user_passes_test(es_almacen_iqf, login_url='/acceso_denegado/')
 def iqf_actualizar(request, producto_encontrado_id):
@@ -360,14 +395,7 @@ def iqf_actualizar(request, producto_encontrado_id):
         messages.success(request, 'El producto se actualizó correctamente.')
         
         return redirect('iqf_mostrar_detalle2', producto_encontrado_id)
-        """
-        for i in range(len(actualizar_cantidad)):
-            #print ("\n este es el id : ", actualizar_cantidad[i].id)
-            print ("\n este es el id de fiscalizados : ", actualizar_cantidad[i].id)
-            print ("\n este es el id a comparar : ", producto_encontrado_id)
-            if actualizar_cantidad[i].iq_fiscalizados_id == producto_encontrado_id:
-                print(" actualizando correctamente")
-        """  
+
         #identificamos el insumo que queremos actualizar dentro de los insumos del almacen
         
         
@@ -389,6 +417,55 @@ def iqf_actualizar(request, producto_encontrado_id):
         messages.error(request, 'Se canceló la actualizacion.')
         return redirect('iqf_mostrar_detalle2', producto_encontrado_id)
 
+"""
+@login_required
+@user_passes_test(es_almacen_iqf, login_url='/acceso_denegado/')
+def iqf_actualizar(request):
+    
+    
+
+    
+    #print("usuario actual -> ", request.user.id)
+    usuario_actual=request.user.id
+    inventario_objetivo = inventarios.objects.filter(auth_user_id_id=usuario_actual)
+    print ("--- inventario_objetivo : ", inventario_objetivo)
+    
+    inventario_id=[]
+    
+    for i in range(len(inventario_objetivo)):
+        inventario_id.append(inventario_objetivo[i].id)
+        
+    print ("\n id de inventario: ", inventario_id[0], "\n")
+    #print ("\n id del insumo : ", producto_encontrado_id, "\n")
+    inventario_id = inventario_id[0]
+    
+    
+    if request.method == 'POST':
+        selected_objects = request.POST.getlist('selected_objects')
+        print("\nelementos seleccionados\n",selected_objects, "\n\n")  # Imprimir los elementos seleccionados en la consola
+        
+        """
+        # Puedes iterar sobre los elementos seleccionados para realizar operaciones
+        for insumo_id in selected_objects:
+            # Hacer algo con cada insumo seleccionado
+            insumo = Insumo.objects.get(id=insumo_id)
+            cantidad = request.POST.get(f'cantidad{insumo_id}')
+            marca = request.POST.get(f'marca{insumo_id}')
+            cod_articulo = request.POST.get(f'cod_articulo{insumo_id}')
+            concentracion = request.POST.get(f'concentracion{insumo_id}')
+            fecha_v = request.POST.get(f'fecha_v{insumo_id}')
+            # Realizar las operaciones necesarias con los datos obtenidos
+        """
+        # Realizar otras operaciones con los datos del formulario
+
+        return redirect('iqf_mconsultar_insumo')
+    
+    
+
+
+
+
+
 
 #VER FICHA TECNICA
 @login_required
@@ -406,6 +483,7 @@ def iqf_ver_ficha(request, iqf_id):
     
     contexto = {'nombre_usuario':nombre, 
                 'apellidos':apellidos,
+                'titulo':perfil_usuario.objects.get(user_id=id_usuario),
                 'iqf_ficha':ficha_requerida}
     
     return render(request, 'ver_ficha.html',contexto)
@@ -415,7 +493,7 @@ def iqf_ver_ficha(request, iqf_id):
 def iqf_habilitar(request):
     nombre = request.user.first_name
     apellidos = request.user.last_name
-    
+    id_usuario = request.user.id
     #notificador = noti_estados
     notificaciones = notificaciones_user.objects.filter(noti_estados_id = 4)
     cant_noti= len(notificaciones)
@@ -428,33 +506,67 @@ def iqf_habilitar(request):
     
     contexto = {'nombre_usuario':nombre, 
                 'apellidos':apellidos,
+                'id_usuario':id_usuario,
+                'titulo':perfil_usuario.objects.get(user_id=id_usuario),
                 'solicitudes_nuevas':notificaciones,
                 'cant_noti':cant_noti,
                 'inventario_usuarios':inventario_usuarios}
     
     return render(request,"habilitar_insumo.html", contexto)
 
-def habilitar_solicitud(request, id_solicitud):
-    from .models import noti_estados
+
 
 def habilitar_solicitud(request, id_solicitud):
     solicitud = notificaciones_user.objects.filter(id=id_solicitud).first()
-
     if solicitud:
         print("\nLa solicitud a habilitar tiene estado:", solicitud.noti_estados_id)
-
+        
+        fecha_actual = datetime.now()
+        fecha_format = fecha_actual.strftime('%Y-%m-%d %H:%M:%S.%f')
+        
         # Obtener la instancia del modelo noti_estados con ID igual a 1 
         estado_habilitado = noti_estados.objects.get(id=1)
 
         # Asignar el estado_habilitado al campo noti_estados_id
         solicitud.noti_estados_id = estado_habilitado
-
-        # Imprimir el nuevo valor del campo (esto mostrará el ID del estado "habilitado")
-        print("Nuevo estado:", solicitud.noti_estados_id.id)
-
+        solicitud.fecha_revision = fecha_format
+        
         # Guardar la instancia actualizada en la base de datos
         solicitud.save()
-
+        # Imprimir el nuevo valor del campo (esto mostrará el ID del estado "habilitado")
+        print("Nuevo estado:", solicitud.noti_estados_id.id)
+        
+        #obtenemos el insumo correspondiente a una determinada solicitud
+        insumo_de_la_notificacion = iq_fiscalizados_notificaciones_user.objects.filter(notificaciones_user_id=solicitud.id).first()
+        #obtenemos el id de dicho insumo (CAS)
+        id_insumo_notificacion = insumo_de_la_notificacion.iq_fiscalizados_id
+        
+        
+        # Actualizamos la cantidad que se tiene del insumo
+        insumo_actualizar= iq_fiscalizados_inventarios.objects.filter(iq_fiscalizados_id=id_insumo_notificacion).first()
+        # obtenemos la solicitud respectiva de insumo
+        print ("\ninvnetario actualizar\n",insumo_actualizar.cantidad,"\n\n")
+        insumo_actualizar.cantidad = insumo_actualizar.cantidad - solicitud.cantidad
+        insumo_actualizar.save()
+        """
+        for  i in insumo_actualizar:
+            if i.iq_fiscalizados_id==id_insumo_notificacion:
+                print ('\n insumos objetivo  \n', i.iq_fiscalizados_id.id, '\n \n')
+        """
+        
+        #actualizamos insumo
+        
+        #cantidad_actualizar=iq_fiscalizados_notificaciones_user.objects.filter(notificaciones_user_id=)
+     
+        
+        """
+    # campo objetivo a modificar ya que la solicitud a sido habilitada por lo cual brindada
+    insumo_almacen=iq_fiscalizados_inventarios.objects.filter()
+    
+    #obtenemos la cantidad total de este insumo 
+    insumo_objetivo = iq_fiscalizados.objects.filter(id=)
+    """
+    
     return redirect("iqf_habilitar")
 
     
@@ -464,13 +576,17 @@ def rechazar_solicitud(request, id_solicitud):
     solicitud = notificaciones_user.objects.filter(id=id_solicitud).first()
     if solicitud:
         print("\nLa solicitud a habilitar tiene estado:", solicitud.noti_estados_id)
-
+        
+        fecha_actual = datetime.now()
+        fecha_format = fecha_actual.strftime('%Y-%m-%d %H:%M:%S.%f')
+        
         # Obtener la instancia del modelo noti_estados con ID igual a 1 
         estado_habilitado = noti_estados.objects.get(id=2)
 
         # Asignar el estado_habilitado al campo noti_estados_id
         solicitud.noti_estados_id = estado_habilitado
-
+        solicitud.fecha_revision = fecha_format
+        
         # Imprimir el nuevo valor del campo (esto mostrará el ID del estado "habilitado")
         print("Nuevo estado:", solicitud.noti_estados_id.id)
 
@@ -478,6 +594,80 @@ def rechazar_solicitud(request, id_solicitud):
         solicitud.save()
 
     return redirect("iqf_habilitar")
+
+"""
+def iqf_reporte_gasto(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="informe.pdf"'
+
+    # Recupera los datos de la base de datos (puedes aplicar un filtro si es necesario)
+    queryset = iq_fiscalizados.objects.all()  # También puedes aplicar filtros aquí si lo deseas
+
+    # Genera el PDF usando reportlab
+    p = canvas.Canvas(response, pagesize=letter)
+    y = 800  # Posición vertical inicial
+    for item in queryset:
+        # Organiza los datos de tu modelo para mostrarlos en el PDF
+        texto = f"{item.nombre} - {item.formula} - {item.id}"  # Cambia "campo1", "campo2", etc. por los nombres de los campos de tu modelo
+        p.drawString(100, y, texto)
+        y -= 20  # Incrementa la posición vertical para el siguiente item
+
+    p.showPage()
+    p.save()
+    return response
+"""
+
+
+def iqf_reporte_gasto(request):
+    #Mostramos el gastso de cada insumo químico individual
+    # Datos para la tabla (ejemplo)
+    insumo_gasto = iq_fiscalizados_notificaciones_user.objects.all()
+        
+    data = [
+        ['Columna 1', 'Columna 2'],
+        ['Valor 1-1', 'Valor 1-2'],
+        ['Valor 2-1', 'Valor 2-2'],
+        # Agrega más datos si es necesario
+    ]
+    
+    # Crear un objeto PDF en memoria
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+
+    # Crear la tabla con los datos
+    table = Table(data)
+
+    # Estilo de la tabla
+    style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.black)])
+
+    # Aplicar el estilo a la tabla
+    table.setStyle(style)
+
+    # Crear el contenedor de elementos y agregar la tabla
+    elements = []
+    elements.append(table)
+
+    # Generar el PDF
+    doc.build(elements)
+
+    # Obtener el contenido del PDF desde el buffer
+    pdf = buffer.getvalue()
+    buffer.close()
+
+    # Crear una respuesta HTTP con el PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="tabla.pdf"'
+    response.write(pdf)
+    return response
+
+
+"""
 @login_required
 @user_passes_test(es_almacen_iqf, login_url='/acceso_denegado/')  
 def iqf_revisar_solicitud(request,nombre_archivo):
@@ -488,6 +678,7 @@ def iqf_revisar_solicitud(request,nombre_archivo):
     print("El archivo a revisar es:", pdf_path)
 
     return redirect("iqf_habilitar")
+"""
     
     
 #VISTAS PARA LOS LABORATORISTAS #VISTAS PARA LOS LABORATORISTAS #VISTAS PARA LOS LABORATORISTAS #VISTAS PARA LOS LABORATORISTAS
@@ -499,14 +690,15 @@ def iqf_revisar_solicitud(request,nombre_archivo):
 def lab_solicitar_insumo(request):
     nombre = request.user.first_name
     apellidos = request.user.last_name
+    id_solicitante = request.user.id
     iq_solicitar = iq_fiscalizados.objects.all()
     print ("\n isumos solicitud \n", iq_solicitar)
 
     #iq_lista=[]
     
     #notificaciones laboratorista, suma de solicitudes habilitadas y rechazadas
-    noti_rechazadas = notificaciones_user.objects.filter(noti_estados_id = 2)
-    noti_habilitadas = notificaciones_user.objects.filter(noti_estados_id = 1)
+    noti_rechazadas = notificaciones_user.objects.filter(noti_estados_id = 2, emisor_id = id_solicitante)
+    noti_habilitadas = notificaciones_user.objects.filter(noti_estados_id = 1, emisor_id = id_solicitante)
     cant_noti= len(noti_rechazadas) + len(noti_habilitadas)
     
     for i in iq_solicitar:
@@ -598,3 +790,4 @@ def inicio(request):
     
     return render(request, "inicio.html",{'nombre_usuario':nombre, 'apellidos':apellidos, 'users_permisos': permisos})
     
+

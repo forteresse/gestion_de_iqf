@@ -58,12 +58,16 @@
 
 					</tr>
 					{% endfor %}
+					
 				</tbody>
 			</table>
 		</div>              
 	</div>
 </div>
 
-
+<form method="post" action="{% url 'iqf_reporte_gasto' %}">
+	{% csrf_token %}
+	<button type="submit" class="btn btn-danger">reporte de gasto</button>
+</form>
 
 {% endblock%}

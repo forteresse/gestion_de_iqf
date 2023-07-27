@@ -36,12 +36,14 @@ urlpatterns = [
     path('iqf_mostrar_detalle/<str:producto_encontrado_id>/',iqf_mostrar_detalle, name='iqf_mostrar_detalle'),
     path('iqf_mostrar_detalle2/<str:producto_encontrado_id>/',iqf_mostrar_detalle2, name='iqf_mostrar_detalle2'),
     path('iqf_llenar_campos/<str:insumo_id>/',iqf_llenar_campos, name='iqf_llenar_campos'),
-    path('iqf_actualizar/<str:producto_encontrado_id>/',iqf_actualizar, name='iqf_actualizar'),
+    #path('iqf_actualizar/<str:producto_encontrado_id>/',iqf_actualizar, name='iqf_actualizar'),
+    path('iqf_actualizar/',iqf_actualizar, name='iqf_actualizar'),
     path('iqf_ver_ficha/<str:iqf_id>/', iqf_ver_ficha, name='iqf_ver_ficha'),
     path('iqf_habilitar/', iqf_habilitar, name='iqf_habilitar'),
-    path('iqf_revisar_solicitud/<str:nombre_archivo>/', iqf_revisar_solicitud, name='iqf_revisar_solicitud'),
+    #path('iqf_revisar_solicitud/<str:nombre_archivo>/', iqf_revisar_solicitud, name='iqf_revisar_solicitud'),
     path('habilitar_solicitud/<str:id_solicitud>/', habilitar_solicitud, name='habilitar_solicitud'),
     path('rechazar_solicitud/<str:id_solicitud>/', rechazar_solicitud, name='rechazar_solicitud'),
+    path('iqf_reporte_gasto/', iqf_reporte_gasto, name='iqf_reporte_gasto'),
     
     #rutas de laboratoristas
     path('lab_solicitar_insumo', lab_solicitar_insumo, name='lab_solicitar_insumo'),
